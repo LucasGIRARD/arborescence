@@ -1,63 +1,1 @@
-<?php
-
-function sql($sql) {
-
-  // Param&egrave;tres de connexion
-  $serveur="sql.free.fr";
-  $utilisateur="net0ne";
-  $passe="gmdev123";
-  $base="net0ne";
-
-  // Ouverture de la connexion
-  $link=mysql_connect($serveur, $utilisateur, $passe)
-	  or exit("Impossible d'ouvrir la connexion avec le serveur MySQL");
-
-  // Choix de la base
-  mysql_select_db($base, $link)
-	  or exit("Impossible d'ouvrir la connexion avec la base ".$base);
-
-  // Ex&eacute;cution de la requête
-  $resultat=mysql_query($sql,$link);
-
-  // R&eacute;cup&eacute;ration des lignes de r&eacute;sultat dans un tableau
-	$tab=array();
- if ($resultat != false){
-  while($ligne=mysql_fetch_array($resultat)) {
-    $tab[]=$ligne;
-  }
- 
-  // Lib&eacute;ration du r&eacute;sultat de la requête
-  mysql_free_result($resultat);
- }
-  // Fermeture de la connexion
-  mysql_close($link);
-
-	// Retourne le tableau
-	return $tab;
-}
-
-
-function insert($sql) {
-
-  // Param&egrave;tres de connexion
-  $serveur="sql.free.fr";
-  $utilisateur="net0ne";
-  $passe="gmdev123";
-  $base="net0ne";
-  
-  // Ouverture de la connexion
-  $link=mysql_connect($serveur, $utilisateur, $passe)
-	  or exit("Impossible d'ouvrir la connexion avec le serveur MySQL");
-
-  // Choix de la base
-  mysql_select_db($base, $link)
-	  or exit("Impossible d'ouvrir la connexion avec la base ".$base);
-
-  // Ex&eacute;cution de la requête
-  mysql_query($sql,$link);
-
-}
-
-
-
-?>
+<?phpfunction openSQLConnexion() {    $host = 'mysql:host=127.0.0.1;dbname=cress';    $user = 'root';    $password = 'mysql';    $option = array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8", PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC);    try {        $connection = new PDO($host, $user, $password, $option);        $connection->query('SET lc_time_names="fr_FR"');    } catch (PDOException $e) {        echo 'ERROR: ' . $e->getMessage();    }    return $connection;}function closeSQLConnexion() {    unset($GLOBALS['connection']);}function insertUpdate($connection, $query, $tabVars, $count = false) {    if (!$count) {        try {            $resultat = $connection->prepare($query);            foreach ($tabVars as $vars) {                return $resultat->execute($vars);            }        } catch (PDOException $e) {            echo 'ERROR: ' . $e->getMessage();        }    } else {        try {            $resultat = $connection->prepare($query);            $i=0;            $count = array();            foreach ($tabVars as $vars) {                if ($resultat->execute($vars)){                    $count[$i]=$resultat->rowCount();                }                else {                    $count[$i]=false;                }                $i++;            }        } catch (PDOException $e) {            echo 'ERROR: ' . $e->getMessage();        }        return $count;    }}function select($connection, $query, $vars = null) {    try {        $resultat = $connection->prepare($query);        $resultat->execute($vars);        return $resultat->fetchAll();    } catch (PDOException $e) {        echo 'ERROR: ' . $e->getMessage();    }}function getLastId(&$connection) {    try {        return $connection->lastInsertId();    } catch (PDOException $e) {        echo 'ERROR: ' . $e->getMessage();    }}?>
